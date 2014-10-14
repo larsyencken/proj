@@ -12,7 +12,7 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = [
-    # TODO: put package requirements here
+    'click>=3.3',
 ]
 
 test_requirements = [
@@ -32,6 +32,11 @@ setup(
     ],
     package_dir={'proj':
                  'proj'},
+    entry_points={
+        'console_scripts': [
+            'proj = proj:main',
+        ],
+    },
     include_package_data=True,
     install_requires=requirements,
     license="BSD",

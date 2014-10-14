@@ -1,5 +1,162 @@
 # -*- coding: utf-8 -*-
+#
+#  __init__.py
+#  proj
+#
+
+from __future__ import print_function
 
 __author__ = 'Lars Yencken'
 __email__ = 'lars@yencken.org'
 __version__ = '0.1.0'
+
+import datetime
+import glob
+import os
+import shutil
+import sys
+from functools import reduce
+
+import click
+
+ARCHIVE_DIR = os.environ.get('PROJ_ARCHIVE')
+
+
+def bail(message):
+    print(message, file=sys.stderr)
+    sys.exit(1)
+
+
+@click.group()
+def main():
+    """
+    proj is a tool for managing many different projects, and archiving
+    projects that you're no longer actively working on.
+
+    The idea is that you have a working folder containing all your projects,
+    and an archive directory with inactive projects organised by year and by
+    quarter (e.g. 2013/q3/my-project). The archive directory is specified by
+    the PROJ_ARCHIVE environment variable.
+    """
+    if ARCHIVE_DIR is None:
+        bail('please set PROJ_ARCHIVE to your archive\'s location')
+
+    if not os.path.isdir(ARCHIVE_DIR):
+        bail('archive directory does not exist: ' + ARCHIVE_DIR)
+
+
+@click.command()
+@click.argument('folder', nargs=-1)
+@click.option('-n', '--dry-run',
+              is_flag=True,
+              help="Don't make any changes")
+def archive(folder, dry_run=False):
+    "Move an active project to the archive."
+    # error handling on archive_dir already done in main()
+
+    for f in folder:
+        if not os.path.isdir(f):
+            bail('folder does not exist: ' + f)
+
+    _archive_safe(folder, ARCHIVE_DIR, dry_run=dry_run)
+
+
+def _last_modified(folder):
+    try:
+        return max(_time_modified(f) for f in _iter_files(folder))
+    except ValueError:
+        bail('no files in folder: ' + folder)
+
+
+def _iter_files(folder):
+    for dirname, subdirs, filenames in os.walk(folder):
+        for basename in filenames:
+            filename = os.path.join(dirname, basename)
+            yield filename
+
+
+def _time_modified(filename):
+    return datetime.datetime.utcfromtimestamp(os.stat(filename).st_mtime)
+
+
+def _to_quarter(t):
+    return str(t.year), 'q' + str(1 + (t.month - 1) // 3)
+
+
+def _archive_safe(folders, archive_dir, dry_run=False):
+    for folder in folders:
+        t = _last_modified(folder)
+        year, quarter = _to_quarter(t)
+        dest_dir = os.path.join(archive_dir, year, quarter, folder)
+
+        print(folder, '-->', dest_dir)
+        if not dry_run:
+            parent_dir = os.path.dirname(dest_dir)
+            _mkdir(parent_dir)
+            shutil.move(folder, dest_dir)
+
+
+def _mkdir(p):
+    "The equivalent of 'mkdir -p' in shell."
+    isdir = os.path.isdir
+
+    stack = [p]
+    while not isdir(stack[-1]):
+        stack.append(os.path.dirname(p))
+
+    while stack:
+        p = stack.pop()
+        if not isdir(p):
+            os.mkdir(p)
+
+
+@click.command()
+@click.argument('pattern', nargs=-1)
+def list(pattern=()):
+    "List the contents of the archive directory."
+    # strategy: pick the intersection of all the patterns the user provides
+    globs = ['*{0}*'.format(p) for p in pattern] + ['*']
+
+    matches = []
+    offset = len(ARCHIVE_DIR) + 1
+    for suffix in globs:
+        glob_pattern = os.path.join(ARCHIVE_DIR, '*', '*', suffix)
+        matches.append(set(
+            f[offset:] for f in glob.glob(glob_pattern)
+        ))
+
+    matches = reduce(lambda x, y: x.intersection(y),
+                     matches)
+
+    for m in sorted(matches):
+        print(m)
+
+
+@click.command()
+@click.argument('folder')
+def restore(folder):
+    "Restore a project from the archive."
+    if os.path.isdir(folder):
+        bail('a folder of the same name already exists!')
+
+    pattern = os.path.join(ARCHIVE_DIR, '*', '*', folder)
+    matches = glob.glob(pattern)
+    if not matches:
+        bail('no project matches: ' + folder)
+
+    if len(matches) > 1:
+        print('Warning: multiple matches, picking the most recent',
+              file=sys.stderr)
+
+    source = sorted(matches)[-1]
+    print(source, '-->', folder)
+    shutil.move(source, '.')
+
+
+main.add_command(archive)
+main.add_command(list)
+main.add_command(restore)
+
+
+if __name__ == '__main__':
+    main()
