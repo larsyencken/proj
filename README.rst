@@ -24,8 +24,8 @@ A command-line folder manager for many projects.
 
 Given this setup, ``proj`` helps you add and remove projects from your archive, and keeps your archive organised in ``<year>/<quarter>`` subfolders, based on when each project was last worked on.
 
-Installing
-----------
+Installation
+------------
 
 Install the package with pip:
 
@@ -38,6 +38,31 @@ Then, tell ``proj`` where your archive directory is, by adding a line to your ``
 .. code:: console
 
     export PROJ_ARCHIVE=~/Archive
+
+Usage
+-----
+
+Use proj to get rid of clutter in your main directory of projects by archiving ones that aren't being worked on. Proj will detect when you last made a change and file it accordingly.
+
+.. code:: console
+
+    $ ls
+    cocktails-that-are-blue   news-for-llamas   old-crusty-project
+    $ proj archive old-crusty-project
+    old-crusty-project -> /Users/lars/Archive/2012/q3/old-crusty-project
+    $ ls
+    cocktails-that-are-blue   news-for-llamas
+    $ proj list
+    2012/q3/old-crusty-project
+
+Now we've archived this project, but we can restore it at any time.
+
+.. code:: console
+
+    $ proj restore old-crusty-project
+    /Users/lars/Archive/2012/q3/old-crusty-project -> old-crusty-project
+    $ ls
+    cocktails-that-are-blue   news-for-llamas   old-crusty-project
 
 Features
 --------
