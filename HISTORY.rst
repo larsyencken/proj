@@ -7,3 +7,4 @@ History
 ---------------------
 
 * First release on PyPI.
+* Archive, restore and search features.

@@ -67,9 +67,6 @@ Now we've archived this project, but we can restore it at any time.
 Features
 --------
 
-0.1.0
-~~~~~
-
 * ``proj archive``: archive a project to an appropriate directory
 * ``proj restore``: restore a project from the archive
 * ``proj list``: search the archive for a project
