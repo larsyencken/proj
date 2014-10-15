@@ -17,7 +17,34 @@ A command-line folder manager for many projects.
 * Free software: BSD license
 * Documentation: https://proj.readthedocs.org.
 
+``proj`` assumes the following working setup:
+
+- You have a directory of active projects that you're working on (e.g. ~/Projects)
+- You have a directory of inactive projects, your archive (e.g. ~/Archive)
+
+Given this setup, ``proj`` helps you add and remove projets from your archive, and keeps your archive organised in ``<year>/<quarter>`` subfolders, based on when each project was last worked on.
+
+Installing
+----------
+
+Install the package with pip:
+
+.. code:: console
+
+    pip install git+git://github.com/larsyencken/proj
+
+Then, tell ``proj`` where your archive directory is, by adding a line to your ``.bashrc`` or ``.zshrc`` file:
+
+.. code:: console
+
+    export PROJ_ARCHIVE=~/Archive
+
 Features
 --------
 
-* TODO
+0.1.0
+~~~~~
+
+* ``proj archive``: archive a project to an appropriate directory
+* ``proj restore``: restore a project from the archive
+* ``proj list``: search the archive for a project
