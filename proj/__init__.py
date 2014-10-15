@@ -33,10 +33,12 @@ def main():
     proj is a tool for managing many different projects, and archiving
     projects that you're no longer actively working on.
 
-    The idea is that you have a working folder containing all your projects,
-    and an archive directory with inactive projects organised by year and by
-    quarter (e.g. 2013/q3/my-project). The archive directory is specified by
-    the PROJ_ARCHIVE environment variable.
+    It assumes you have a working folder containing active projects,
+    and an archive folder with inactive projects. proj helps organise
+    inactive projects by year and by quarter (e.g. 2013/q3/my-project).
+
+    proj needs an archive directory specified by the PROJ_ARCHIVE
+    environment variable.
     """
     if ARCHIVE_DIR is None:
         bail('please set PROJ_ARCHIVE to your archive\'s location')

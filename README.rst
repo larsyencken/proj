@@ -22,7 +22,7 @@ A command-line folder manager for many projects.
 - You have a directory of active projects that you're working on (e.g. ~/Projects)
 - You have a directory of inactive projects, your archive (e.g. ~/Archive)
 
-Given this setup, ``proj`` helps you add and remove projets from your archive, and keeps your archive organised in ``<year>/<quarter>`` subfolders, based on when each project was last worked on.
+Given this setup, ``proj`` helps you add and remove projects from your archive, and keeps your archive organised in ``<year>/<quarter>`` subfolders, based on when each project was last worked on.
 
 Installing
 ----------
