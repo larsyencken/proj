@@ -102,9 +102,10 @@ def _mkdir(p):
     "The equivalent of 'mkdir -p' in shell."
     isdir = os.path.isdir
 
-    stack = [p]
+    stack = [os.path.abspath(p)]
     while not isdir(stack[-1]):
-        stack.append(os.path.dirname(p))
+        parent_dir = os.path.dirname(stack[-1])
+        stack.append(parent_dir)
 
     while stack:
         p = stack.pop()
