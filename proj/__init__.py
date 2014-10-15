@@ -10,13 +10,13 @@ __author__ = 'Lars Yencken'
 __email__ = 'lars@yencken.org'
 __version__ = '0.1.0'
 
-import datetime
 import glob
 import os
 import shutil
 import sys
 from functools import reduce
 
+import arrow
 import click
 
 ARCHIVE_DIR = os.environ.get('PROJ_ARCHIVE')
@@ -78,7 +78,7 @@ def _iter_files(folder):
 
 
 def _time_modified(filename):
-    return datetime.datetime.utcfromtimestamp(os.stat(filename).st_mtime)
+    return arrow.get(os.stat(filename).st_mtime)
 
 
 def _to_quarter(t):

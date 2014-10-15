@@ -12,6 +12,7 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = [
+    'arrow>=0.4.4',
     'click>=3.3',
 ]
 
