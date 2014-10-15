@@ -89,7 +89,8 @@ def _archive_safe(folders, archive_dir, dry_run=False):
     for folder in folders:
         t = _last_modified(folder)
         year, quarter = _to_quarter(t)
-        dest_dir = os.path.join(archive_dir, year, quarter, folder)
+        dest_dir = os.path.join(archive_dir, year, quarter,
+                                os.path.basename(folder))
 
         print(folder, '-->', dest_dir)
         if not dry_run:
