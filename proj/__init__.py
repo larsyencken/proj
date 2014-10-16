@@ -19,11 +19,11 @@ from functools import reduce
 import arrow
 import click
 
-ARCHIVE_DIR = os.environ.get('PROJ_ARCHIVE')
+PROJ_ARCHIVE = os.environ.get('PROJ_ARCHIVE')
 
 
 def bail(message):
-    print(message, file=sys.stderr)
+    click.echo(message, err=True)
     sys.exit(1)
 
 
@@ -40,11 +40,11 @@ def main():
     proj needs an archive directory specified by the PROJ_ARCHIVE
     environment variable.
     """
-    if ARCHIVE_DIR is None:
+    if PROJ_ARCHIVE is None:
         bail('please set PROJ_ARCHIVE to your archive\'s location')
 
-    if not os.path.isdir(ARCHIVE_DIR):
-        bail('archive directory does not exist: ' + ARCHIVE_DIR)
+    if not os.path.isdir(PROJ_ARCHIVE):
+        bail('archive directory does not exist: ' + PROJ_ARCHIVE)
 
 
 @click.command()
@@ -60,7 +60,7 @@ def archive(folder, dry_run=False):
         if not os.path.isdir(f):
             bail('folder does not exist: ' + f)
 
-    _archive_safe(folder, ARCHIVE_DIR, dry_run=dry_run)
+    _archive_safe(folder, PROJ_ARCHIVE, dry_run=dry_run)
 
 
 def _last_modified(folder):
@@ -122,9 +122,9 @@ def list(pattern=()):
     globs = ['*{0}*'.format(p) for p in pattern] + ['*']
 
     matches = []
-    offset = len(ARCHIVE_DIR) + 1
+    offset = len(PROJ_ARCHIVE) + 1
     for suffix in globs:
-        glob_pattern = os.path.join(ARCHIVE_DIR, '*', '*', suffix)
+        glob_pattern = os.path.join(PROJ_ARCHIVE, '*', '*', suffix)
         matches.append(set(
             f[offset:] for f in glob.glob(glob_pattern)
         ))
@@ -143,7 +143,7 @@ def restore(folder):
     if os.path.isdir(folder):
         bail('a folder of the same name already exists!')
 
-    pattern = os.path.join(ARCHIVE_DIR, '*', '*', folder)
+    pattern = os.path.join(PROJ_ARCHIVE, '*', '*', folder)
     matches = glob.glob(pattern)
     if not matches:
         bail('no project matches: ' + folder)
