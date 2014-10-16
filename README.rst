@@ -31,7 +31,7 @@ Install the package with pip:
 
 .. code:: console
 
-    pip install git+git://github.com/larsyencken/proj
+    pip install proj
 
 Then, tell ``proj`` where your archive directory is, by adding a line to your ``.bashrc`` or ``.zshrc`` file:
 
