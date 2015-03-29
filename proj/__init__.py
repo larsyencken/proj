@@ -57,7 +57,7 @@ def archive(folder, dry_run=False):
     # error handling on archive_dir already done in main()
 
     for f in folder:
-        if not os.path.isdir(f):
+        if not os.path.exists(f):
             bail('folder does not exist: ' + f)
 
     _archive_safe(folder, PROJ_ARCHIVE, dry_run=dry_run)
@@ -71,10 +71,14 @@ def _last_modified(folder):
 
 
 def _iter_files(folder):
-    for dirname, subdirs, filenames in os.walk(folder):
-        for basename in filenames:
-            filename = os.path.join(dirname, basename)
-            yield filename
+    if os.path.isdir(folder):
+        for dirname, subdirs, filenames in os.walk(folder):
+            for basename in filenames:
+                filename = os.path.join(dirname, basename)
+                yield filename
+    else:
+        # it's actually just a file
+        yield folder
 
 
 def _time_modified(filename):
