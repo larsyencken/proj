@@ -28,8 +28,8 @@ import proj
 class TestProj(unittest.TestCase):
     def setUp(self):
         self.base = tempfile.mkdtemp()
-        self.archive = path.join(self.base, 'archive')
-        self.current = path.join(self.base, 'current')
+        self.archive = path.join(self.base, "archive")
+        self.current = path.join(self.base, "current")
         proj.PROJ_ARCHIVE = self.archive
         os.mkdir(self.current)
         os.mkdir(self.archive)
@@ -50,23 +50,19 @@ class TestProj(unittest.TestCase):
 
     def test_first_quarter_start(self):
         a = arrow.get(2000, 1, 1)
-        self.assertEqual(proj._to_quarter(a),
-                         ('2000', 'q1'))
+        self.assertEqual(proj._to_quarter(a), ("2000", "q1"))
 
     def test_first_quarter_end(self):
         a = arrow.get(2000, 3, 1)
-        self.assertEqual(proj._to_quarter(a),
-                         ('2000', 'q1'))
+        self.assertEqual(proj._to_quarter(a), ("2000", "q1"))
 
     def test_last_quarter_start(self):
         a = arrow.get(2000, 10, 1)
-        self.assertEqual(proj._to_quarter(a),
-                         ('2000', 'q4'))
+        self.assertEqual(proj._to_quarter(a), ("2000", "q4"))
 
     def test_last_quarter_end(self):
         a = arrow.get(2000, 12, 1)
-        self.assertEqual(proj._to_quarter(a),
-                         ('2000', 'q4'))
+        self.assertEqual(proj._to_quarter(a), ("2000", "q4"))
 
     def test_help(self):
         result = self.runner.invoke(proj.main)
@@ -75,12 +71,12 @@ class TestProj(unittest.TestCase):
     def test_list_empty(self):
         result = self.runner.invoke(proj.list)
         self.assertEqual(result.exit_code, 0)
-        self.assertEqual(result.output, '')
+        self.assertEqual(result.output, "")
 
     def test_list_empty_with_glob(self):
-        result = self.runner.invoke(proj.list, ['a', 'b', 'c'])
+        result = self.runner.invoke(proj.list, ["a", "b", "c"])
         self.assertEqual(result.exit_code, 0)
-        self.assertEqual(result.output, '')
+        self.assertEqual(result.output, "")
 
     def test_archive_project_in_current_dir_by_name(self):
         a = arrow.get(2000, 1, 1)
@@ -90,9 +86,9 @@ class TestProj(unittest.TestCase):
             result = self.runner.invoke(proj.archive, [proj_name])
             self.assertEqual(result.exit_code, 0)
 
-        expected_loc = path.join(self.archive, '2000', 'q1', proj_name)
+        expected_loc = path.join(self.archive, "2000", "q1", proj_name)
         assert path.isdir(expected_loc)
-        assert path.exists(path.join(expected_loc, 'data'))
+        assert path.exists(path.join(expected_loc, "data"))
 
     def test_archive_project_by_full_path(self):
         a = arrow.get(2000, 1, 1)
@@ -101,9 +97,9 @@ class TestProj(unittest.TestCase):
         result = self.runner.invoke(proj.archive, [proj_path])
         self.assertEqual(result.exit_code, 0)
 
-        expected_loc = path.join(self.archive, '2000', 'q1', proj_name)
+        expected_loc = path.join(self.archive, "2000", "q1", proj_name)
         assert path.isdir(expected_loc)
-        assert path.exists(path.join(expected_loc, 'data'))
+        assert path.exists(path.join(expected_loc, "data"))
 
     def test_list_projects(self):
         # archive a project
@@ -115,13 +111,13 @@ class TestProj(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
 
         # list it
-        expected = path.join('2000', 'q1', proj_name) + '\n'
+        expected = path.join("2000", "q1", proj_name) + "\n"
         result2 = self.runner.invoke(proj.list)
         self.assertEqual(result2.exit_code, 0)
         self.assertEqual(result2.output, expected)
 
         # list it by suffix
-        expected = path.join('2000', 'q1', proj_name) + '\n'
+        expected = path.join("2000", "q1", proj_name) + "\n"
         result3 = self.runner.invoke(proj.list, [proj_name[:4]])
         self.assertEqual(result3.exit_code, 0)
         self.assertEqual(result3.output, expected)
@@ -142,38 +138,38 @@ class TestProj(unittest.TestCase):
             assert path.isdir(proj_path)
 
     def test_mkdir(self):
-        dest = path.join(self.current, 'dog')
+        dest = path.join(self.current, "dog")
         assert not path.isdir(dest)
         proj._mkdir(dest)
         assert path.isdir(dest)
 
-        dest2 = path.join(self.current, 'mouse', 'a', 'b', 'c')
+        dest2 = path.join(self.current, "mouse", "a", "b", "c")
         assert not path.isdir(dest2)
         proj._mkdir(dest2)
         assert path.isdir(dest2)
 
     def test_archive_dir_not_set(self):
         proj.PROJ_ARCHIVE = None
-        result = self.runner.invoke(proj.main, ['list'])
+        result = self.runner.invoke(proj.main, ["list"])
         self.assertEqual(result.exit_code, 1)
 
     def test_archive_dir_doesnt_exist(self):
-        proj.PROJ_ARCHIVE = '/tmp/does-not-exist'
-        result = self.runner.invoke(proj.main, ['list'])
+        proj.PROJ_ARCHIVE = "/tmp/does-not-exist"
+        result = self.runner.invoke(proj.main, ["list"])
         self.assertEqual(result.exit_code, 1)
 
     def test_archive_nonexistent_folder(self):
-        result = self.runner.invoke(proj.main, ['archive', 'old-buddy-fred'])
+        result = self.runner.invoke(proj.main, ["archive", "old-buddy-fred"])
         self.assertEqual(result.exit_code, 1)
 
     def test_archive_empty_folder(self):
-        proj_path = path.join(self.current, 'empty')
+        proj_path = path.join(self.current, "empty")
         os.mkdir(proj_path)
-        result = self.runner.invoke(proj.main, ['archive', proj_path])
+        result = self.runner.invoke(proj.main, ["archive", proj_path])
         self.assertEqual(result.exit_code, 1)
 
     def test_restore_missing_project(self):
-        result = self.runner.invoke(proj.main, ['restore', 'my-dignity'])
+        result = self.runner.invoke(proj.main, ["restore", "my-dignity"])
         self.assertEqual(result.exit_code, 1)
 
     def test_restore_onto_existing_dir(self):
@@ -189,29 +185,25 @@ class TestProj(unittest.TestCase):
             # put something else in the way
             os.mkdir(proj_name)
 
-            result = self.runner.invoke(proj.main, ['restore', proj_name])
+            result = self.runner.invoke(proj.main, ["restore", proj_name])
             self.assertEqual(result.exit_code, 1)
 
     def test_restore_the_most_recent_of_duplicates(self):
         name = random_string(8)
 
         with chdir(self.current):
-            self.make_proj(name=name,
-                           a=arrow.get(2020, 1, 1),
-                           data='newer')
+            self.make_proj(name=name, a=arrow.get(2020, 1, 1), data="newer")
             self.runner.invoke(proj.archive, [name])
 
-            self.make_proj(name=name,
-                           a=arrow.get(2000, 1, 1),
-                           data='older')
+            self.make_proj(name=name, a=arrow.get(2000, 1, 1), data="older")
             self.runner.invoke(proj.archive, [name])
 
             self.runner.invoke(proj.restore, [name])
-            with open(path.join(name, 'data')) as istream:
+            with open(path.join(name, "data")) as istream:
                 data = istream.read()
-            self.assertEqual(data, 'newer')
+            self.assertEqual(data, "newer")
 
-    def make_proj(self, name=None, a=None, data=''):
+    def make_proj(self, name=None, a=None, data=""):
         a = a or random_time()
         t = a.timestamp
 
@@ -221,8 +213,8 @@ class TestProj(unittest.TestCase):
         os.mkdir(proj_path)
 
         # make an empty file at proj/data
-        f = path.join(proj_path, 'data')
-        with open(f, 'w') as ostream:
+        f = path.join(proj_path, "data")
+        with open(f, "w") as ostream:
             ostream.write(data)
 
         # set its modification time
@@ -235,14 +227,11 @@ class TestProj(unittest.TestCase):
 
 
 def random_time():
-    return arrow.get(
-        math.floor(random.random() * arrow.get(2038, 1, 1).timestamp)
-    )
+    return arrow.get(math.floor(random.random() * arrow.get(2038, 1, 1).timestamp))
 
 
 def random_string(l):
-    return ''.join(random.choice(string.ascii_lowercase)
-                   for i in range(l))
+    return "".join(random.choice(string.ascii_lowercase) for i in range(l))
 
 
 @contextlib.contextmanager
@@ -255,5 +244,5 @@ def chdir(d):
         os.chdir(current_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
