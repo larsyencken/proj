@@ -63,7 +63,10 @@ def archive(folder, dry_run=False):
 
 def _last_modified(folder):
     try:
-        return max(_time_modified(f) for f in _iter_files(folder))
+        return max(
+            _time_modified(f) for f in _iter_files(folder) if not os.path.islink(f)
+        )
+
     except ValueError:
         bail("no files in folder: " + folder)
 
