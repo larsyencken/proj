@@ -113,7 +113,7 @@ def _archive_safe(
 
         print(folder, "-->", dest_dir)
         if not dry_run:
-            if compress:
+            if compress and os.path.isdir(folder):
                 _compress_and_archive(folder, dest_dir)
             else:
                 _archive_folder(folder, dest_dir)
