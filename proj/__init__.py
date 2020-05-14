@@ -132,7 +132,7 @@ def _compress_and_archive(src_folder, dst_folder):
     try:
         shutil.make_archive(dst_folder, COMPRESS_FORMAT, src_folder)
     except Exception as e:
-        shutil.rm(dst_folder + COMPRESS_EXT)
+        os.unlink(dst_folder + COMPRESS_EXT)
         raise e
 
     shutil.rmtree(src_folder)
