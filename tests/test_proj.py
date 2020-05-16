@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-test_proj
-----------------------------------
-
-Tests for `proj` module.
-"""
-
 from os import path
 import contextlib
 import math
@@ -230,8 +223,8 @@ def random_time():
     return arrow.get(math.floor(random.random() * arrow.get(2038, 1, 1).timestamp))
 
 
-def random_string(l):
-    return "".join(random.choice(string.ascii_lowercase) for i in range(l))
+def random_string(length):
+    return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
 
 @contextlib.contextmanager
