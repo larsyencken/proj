@@ -11,16 +11,20 @@ except ImportError:
 readme = open("README.rst").read()
 history = open("HISTORY.rst").read().replace(".. :changelog:", "")
 
-requirements = ["arrow>=0.4.4", "click>=3.3"]
+requirements = ["arrow>=0.15.6", "click>=7.1.2"]
 
 test_requirements = [
-    # TODO: put package test requirements here
+    "pytest",
+    "mypy",
+    "flake8",
+    "black",
+    "pytest-cov",
 ]
 
 setup(
     name="proj",
-    version="0.1.0",
-    description="A command-line folder manager for many projects.",
+    version="0.2.0",
+    description="A command-line manager for archiving and retrieving projects.",
     long_description=readme + "\n\n" + history,
     author="Lars Yencken",
     author_email="lars@yencken.org",
@@ -38,12 +42,8 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     test_suite="tests",
     tests_require=test_requirements,

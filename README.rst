@@ -12,7 +12,7 @@ proj
         :target: https://pypi.python.org/pypi/proj
 
 
-A command-line folder manager for archiving old projects.
+A command-line folder manager for archiving and restoring a long-term set of projects.
 
 * Free software: BSD license
 * Documentation: https://proj.readthedocs.org.
