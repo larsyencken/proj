@@ -165,7 +165,16 @@ def list(pattern: List[str]) -> None:
     offset = len(archive_dir) + 1
     for suffix in globs:
         glob_pattern = os.path.join(archive_dir, "*", "*", suffix)
-        match_set = set(f[offset:] for f in glob.glob(glob_pattern))
+
+        match_set = set()
+        for full_filename in glob.glob(glob_pattern):
+            if full_filename.endswith(COMPRESS_EXT):
+                base = full_filename[offset : -len(COMPRESS_EXT)]
+            else:
+                base = full_filename[offset:]
+
+            match_set.add(base)
+
         match_sets.append(match_set)
 
     final_set = reduce(lambda x, y: x.intersection(y), match_sets)

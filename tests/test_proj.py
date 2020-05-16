@@ -71,7 +71,19 @@ class TestProj(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(result.output, "")
 
-    def test_archive_project_in_current_dir_by_name(self):
+    def test_archive_project_in_current_dir_by_name_uncompressed(self):
+        a = arrow.get(2000, 1, 1)
+        proj_name, proj_path = self.make_proj(a=a)
+
+        with chdir(self.current):
+            result = self.runner.invoke(proj.archive, ["--no-compress", proj_name])
+            self.assertEqual(result.exit_code, 0)
+
+        expected_loc = path.join(self.archive, "2000", "q1", proj_name)
+        assert path.isdir(expected_loc)
+        assert path.exists(path.join(expected_loc, "data"))
+
+    def test_archive_project_in_current_dir_by_name_compressed(self):
         a = arrow.get(2000, 1, 1)
         proj_name, proj_path = self.make_proj(a=a)
 
@@ -79,15 +91,28 @@ class TestProj(unittest.TestCase):
             result = self.runner.invoke(proj.archive, [proj_name])
             self.assertEqual(result.exit_code, 0)
 
-        expected_loc = path.join(self.archive, "2000", "q1", proj_name)
-        assert path.isdir(expected_loc)
-        assert path.exists(path.join(expected_loc, "data"))
+        expected_loc = path.join(
+            self.archive, "2000", "q1", proj_name + proj.COMPRESS_EXT
+        )
+        assert path.exists(expected_loc)
 
-    def test_archive_project_by_full_path(self):
+    def test_archive_project_by_full_path_compressed(self):
         a = arrow.get(2000, 1, 1)
         proj_name, proj_path = self.make_proj(a=a)
 
         result = self.runner.invoke(proj.archive, [proj_path])
+        self.assertEqual(result.exit_code, 0)
+
+        expected_loc = path.join(
+            self.archive, "2000", "q1", proj_name + proj.COMPRESS_EXT
+        )
+        assert path.exists(expected_loc)
+
+    def test_archive_project_by_full_path_uncompressed(self):
+        a = arrow.get(2000, 1, 1)
+        proj_name, proj_path = self.make_proj(a=a)
+
+        result = self.runner.invoke(proj.archive, ["--no-compress", proj_path])
         self.assertEqual(result.exit_code, 0)
 
         expected_loc = path.join(self.archive, "2000", "q1", proj_name)
