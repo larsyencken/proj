@@ -11,10 +11,14 @@ except ImportError:
 readme = open("README.rst").read()
 history = open("HISTORY.rst").read().replace(".. :changelog:", "")
 
-requirements = ["arrow>=0.4.4", "click>=3.3"]
+requirements = ["arrow>=0.15.6", "click>=7.1.2"]
 
 test_requirements = [
-    # TODO: put package test requirements here
+    "pytest",
+    "mypy",
+    "flake8",
+    "black",
+    "pytest-cov",
 ]
 
 setup(

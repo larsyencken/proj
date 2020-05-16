@@ -2,7 +2,7 @@ include defaults.mk
 
 CODE_LOCATIONS = proj tests
 
-COVERAGE_LIMIT = 97
+COVERAGE_LIMIT = 98
 
 #.PHONY: clean-pyc clean-build docs clean
 
