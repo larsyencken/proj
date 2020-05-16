@@ -8,17 +8,6 @@ jobs:
     executor: python/default
     steps:
       - checkout
-      - restore_cache:
-        keys:
-          - virtualenv-{{ checksum "requirements.txt" }}-{{ checksum "test_requirements.txt" }}
-      - run:
-          command: make .venv
-          name: Build virtualenv
-      - save_cache:
-        keys:
-          - virtualenv-{{ checksum "requirements.txt" }}-{{ checksum "test_requirements.txt" }}
-        paths:
-          - .venv
       - run:
           command: make test
           name: Test
