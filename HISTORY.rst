@@ -3,8 +3,8 @@
 History
 -------
 
-dev
----
+0.2.0 (dev)
+-----------
 
 * Moved to Python 3.x only support to allow type hinting.
 

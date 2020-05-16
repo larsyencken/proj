@@ -23,8 +23,8 @@ test_requirements = [
 
 setup(
     name="proj",
-    version="0.1.0",
-    description="A command-line folder manager for many projects.",
+    version="0.2.0",
+    description="A command-line manager for archiving and retrieving projects.",
     long_description=readme + "\n\n" + history,
     author="Lars Yencken",
     author_email="lars@yencken.org",
