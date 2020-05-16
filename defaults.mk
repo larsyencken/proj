@@ -31,6 +31,7 @@ unittest-default: .venv
 	@PYTHONPATH=. .venv/bin/pytest $(CODE_LOCATIONS) --cov-report term-missing:skip-covered --cov $(CODE_LOCATIONS) --no-cov-on-fail --cov-fail-under=$(COVERAGE_LIMIT) -W ignore::DeprecationWarning -vv
 
 .venv: test_requirements.txt
+	@echo '==> Updating the virtualenv...'
 	test -d .venv || python3 -m venv .venv
 	# build wheels when developing locally
 	test -z "$$CI" && .venv/bin/pip install -U pip wheel || true
