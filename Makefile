@@ -53,4 +53,6 @@ dist: clean
 	ls -l dist
 
 watch: .venv
-	.venv/bin/watchmedo shell-command --drop -c 'clear && make lint && make mypy && .venv/bin/pytest -x' $(CODE_LOCATIONS)
+	@clear
+	@make test || true
+	@.venv/bin/watchmedo shell-command --drop -c 'clear && make test'

@@ -72,3 +72,8 @@ def iter_files(file_or_folder: str) -> Iterator[str]:
 
 def mtime(filename: str) -> arrow.Arrow:
     return arrow.get(os.stat(filename).st_mtime)
+
+
+def touch(filename: str) -> None:
+    with open(filename, "a"):
+        pass

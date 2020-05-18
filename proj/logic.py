@@ -45,7 +45,7 @@ def restore(dest_path: str, config: Config) -> None:
         nice_source = fs.trim_archive_extension(source)
         print(nice_source, "-->", dest_path)
 
-        shutil.unpack_archive(source, "./{folder}")
+        shutil.unpack_archive(source, ".")
         os.unlink(source)
     else:
         print(source, "-->", dest_path)
@@ -101,7 +101,7 @@ def _archive_compressed(
     dest_filename = dest_path + compression_ext
 
     try:
-        shutil.make_archive(dest_path, compression_format, src_path)
+        shutil.make_archive(dest_path, compression_format, ".", src_path)
 
     except Exception as e:
         # remove the partially compressed file

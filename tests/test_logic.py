@@ -13,6 +13,7 @@ import math
 from typing import Optional
 import random
 import string
+from unittest.mock import patch
 
 import arrow
 import pytest
@@ -170,6 +171,16 @@ class TestMainLogic:
         with pytest.raises(logic.CommandError):
             logic.restore("my-dignity", self.no_compression)
 
+    def test_restore_compressed(self):
+        data = "alakazam"
+        proj_name, _ = self.make_proj(data=data)
+
+        logic.archive(proj_name, self.bz2_compression)
+        logic.restore(proj_name, self.bz2_compression)
+
+        with open(f"{proj_name}/data") as istream:
+            assert istream.read().strip() == data
+
     def test_restore_onto_existing_dir(self):
         # make a project
         proj_name, proj_path = self.make_proj()
@@ -221,6 +232,35 @@ class TestMainLogic:
         os.utime(f, (t, t))
 
         return proj_name, proj_path
+
+    @patch("shutil.make_archive")
+    def test_archive_compressed_failure(self, make_archive):
+
+        src_path, _ = self.make_proj()
+        dest_path = logic._archive_path(src_path, self.bz2_compression)
+
+        archive_file = f"{dest_path}.tar.bz2"
+
+        # imagine we fail part way through writing the archive
+        def touch_and_fail(*args, **kwargs):
+            fs.mkdir(os.path.dirname(archive_file))
+            fs.touch(archive_file)
+            raise KeyError()
+
+        make_archive.side_effect = touch_and_fail
+
+        # check that we re-raise the exception
+        with pytest.raises(KeyError):
+            # actuall call we're testing
+            logic._archive_compressed(
+                src_path,
+                dest_path,
+                compression_format="bztar",
+                compression_ext=".tar.bz2",
+            )
+
+        # check that we deleted it
+        assert not os.path.exists(archive_file)
 
 
 def random_time():
