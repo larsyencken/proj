@@ -5,8 +5,7 @@ proj
 .. image:: https://badge.fury.io/py/proj.png
     :target: http://badge.fury.io/py/proj
 
-.. image:: https://travis-ci.org/larsyencken/proj.png?branch=master
-        :target: https://travis-ci.org/larsyencken/proj
+.. image:: [![larsyencken](https://circleci.com/gh/larsyencken/proj.svg?style=svg)](https://app.circleci.com/pipelines/github/larsyencken/proj)
 
 .. image:: https://pypip.in/d/proj/badge.png
         :target: https://pypi.python.org/pypi/proj
