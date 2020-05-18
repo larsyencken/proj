@@ -33,11 +33,20 @@ Install the package with pip:
 
     pip install proj
 
-Then, tell ``proj`` where your archive directory is, by adding a line to your ``.bashrc`` or ``.zshrc`` file:
+Then, tell ``proj`` where your archive directory is, by creating a ``~/.proj.yml`` file
 
-.. code:: console
+.. code::
 
-    export PROJ_ARCHIVE=~/Archive
+    archive_dir: _archive
+
+You can enable compression for archives by adding more directives to the YAML file:
+
+.. code::
+
+    compression: true
+    compression_format: bztar
+
+The supported formats are: ``tar``, ``gztar``, ``bztar`` and ``zip``.
 
 Usage
 -----

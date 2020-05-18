@@ -4,4 +4,9 @@ black
 pytest
 flake8
 mypy
-pytest-cov
+watchdog
+argh
+
+# Workaround for chdir issue
+# https://github.com/pytest-dev/pytest-cov/issues/306
+pytest-cov==2.5.1

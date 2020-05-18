@@ -51,3 +51,8 @@ dist: clean
 	python setup.py sdist
 	python setup.py bdist_wheel
 	ls -l dist
+
+watch: .venv
+	@clear
+	@make test || true
+	@.venv/bin/watchmedo shell-command --drop -c 'clear && make test'
