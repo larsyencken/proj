@@ -16,7 +16,12 @@ import arrow
 from proj.exceptions import CommandError
 
 
-SUPPORTED_FORMATS = {"bztar": ".tar.bz2", "gztar": ".tar.gz", "zip": ".zip"}
+SUPPORTED_FORMATS = {
+    "bztar": ".tar.bz2",
+    "gztar": ".tar.gz",
+    "zip": ".zip",
+    "tar": ".tar",
+}
 
 
 def mkdir(p: str) -> None:
