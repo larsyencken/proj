@@ -79,7 +79,10 @@ def _get_config() -> Config:
         config = Config.autoload()
 
     except NoConfigError:
-        bail("No config file found, run proj init")
+        bail(
+            "No config file found at ~/.proj.yml -- please set one up\n"
+            "See https://github.com/larsyencken/proj/ for an example"
+        )
 
     return config
 
