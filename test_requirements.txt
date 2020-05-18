@@ -6,6 +6,7 @@ flake8
 mypy
 watchdog
 argh
+twine
 
 # Workaround for chdir issue
 # https://github.com/pytest-dev/pytest-cov/issues/306
