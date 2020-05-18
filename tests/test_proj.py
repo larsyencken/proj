@@ -11,217 +11,231 @@ import string
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
+from typing import Optional
 
 import arrow
+import pytest
 from click.testing import CliRunner
 
 import proj
+from proj.configfile import Config
+from proj import fs
 
 
-class TestProj(unittest.TestCase):
-    def setUp(self):
+class TestProj:
+    def setup_method(self):
         self.base = tempfile.mkdtemp()
+
         self.archive = path.join(self.base, "archive")
+        fs.mkdir(self.archive)
+
         self.current = path.join(self.base, "current")
-        proj.PROJ_ARCHIVE = self.archive
-        os.mkdir(self.current)
-        os.mkdir(self.archive)
+        fs.mkdir(self.current)
+
+        self.old_cwd = os.getcwd()
+        os.chdir(self.current)
 
         self.runner = CliRunner()
+        self.no_compression = Config(
+            archive_dir=self.archive, compression=False, compression_format=None
+        )
+        self.bz2_compression = Config(
+            archive_dir=self.archive, compression=True, compression_format="bztar"
+        )
+
+    def teardown_method(self):
+        os.chdir(self.old_cwd)
+        shutil.rmtree(self.base)
 
     def test_time_conversion(self):
         # we should be able to convert from a timestamp and back
         t = time.time()
         a = arrow.get(t)
-        self.assertAlmostEqual(math.floor(t), a.timestamp)
+        assert math.floor(t) == pytest.approx(a.timestamp)
 
     def test_latest_check_for_single_file(self):
         a = random_time()
         proj_name, proj_path = self.make_proj(a=a)
         assert path.isdir(proj_path)
-        self.assertEqual(proj._last_modified(proj_path), a)
-
-    def test_first_quarter_start(self):
-        a = arrow.get(2000, 1, 1)
-        self.assertEqual(proj._to_quarter(a), ("2000", "q1"))
-
-    def test_first_quarter_end(self):
-        a = arrow.get(2000, 3, 1)
-        self.assertEqual(proj._to_quarter(a), ("2000", "q1"))
-
-    def test_last_quarter_start(self):
-        a = arrow.get(2000, 10, 1)
-        self.assertEqual(proj._to_quarter(a), ("2000", "q4"))
-
-    def test_last_quarter_end(self):
-        a = arrow.get(2000, 12, 1)
-        self.assertEqual(proj._to_quarter(a), ("2000", "q4"))
+        assert fs.last_modified(proj_path) == a
 
     def test_help(self):
         result = self.runner.invoke(proj.main)
-        self.assertEqual(result.exit_code, 0)
+        assert result.exit_code == 0
 
-    def test_list_empty(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_list_empty(self, autoload):
+        autoload.return_value = self.no_compression
+
         result = self.runner.invoke(proj.list)
-        self.assertEqual(result.exit_code, 0)
-        self.assertEqual(result.output, "")
+        assert result.exit_code == 0
+        assert result.output == ""
 
-    def test_list_empty_with_glob(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_list_empty_with_glob(self, autoload):
+        autoload.return_value = self.no_compression
+
         result = self.runner.invoke(proj.list, ["a", "b", "c"])
-        self.assertEqual(result.exit_code, 0)
-        self.assertEqual(result.output, "")
+        assert result.exit_code == 0
+        assert result.output == ""
 
-    def test_archive_project_in_current_dir_by_name_uncompressed(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_archive_project_in_current_dir_by_name_uncompressed(self, autoload):
+        autoload.return_value = self.no_compression
+
         a = arrow.get(2000, 1, 1)
         proj_name, proj_path = self.make_proj(a=a)
 
-        with chdir(self.current):
-            result = self.runner.invoke(proj.archive, ["--no-compress", proj_name])
-            self.assertEqual(result.exit_code, 0)
+        result = self.runner.invoke(proj.archive, [proj_name])
+        assert result.exit_code == 0
 
         expected_loc = path.join(self.archive, "2000", "q1", proj_name)
         assert path.isdir(expected_loc)
         assert path.exists(path.join(expected_loc, "data"))
 
-    def test_archive_project_in_current_dir_by_name_compressed(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_archive_project_in_current_dir_by_name_compressed(self, autoload):
+        autoload.return_value = self.bz2_compression
+
         a = arrow.get(2000, 1, 1)
         proj_name, proj_path = self.make_proj(a=a)
 
-        with chdir(self.current):
-            result = self.runner.invoke(proj.archive, [proj_name])
-            self.assertEqual(result.exit_code, 0)
+        result = self.runner.invoke(proj.archive, [proj_name])
+        assert result.exit_code == 0
 
-        expected_loc = path.join(
-            self.archive, "2000", "q1", proj_name + proj.COMPRESS_EXT
-        )
+        expected_loc = path.join(self.archive, "2000", "q1", proj_name + ".tar.bz2")
         assert path.exists(expected_loc)
 
-    def test_archive_project_by_full_path_compressed(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_archive_project_by_full_path_compressed(self, autoload):
+        autoload.return_value = self.bz2_compression
+
         a = arrow.get(2000, 1, 1)
         proj_name, proj_path = self.make_proj(a=a)
 
         result = self.runner.invoke(proj.archive, [proj_path])
-        self.assertEqual(result.exit_code, 0)
+        assert result.exit_code == 0
 
-        expected_loc = path.join(
-            self.archive, "2000", "q1", proj_name + proj.COMPRESS_EXT
-        )
+        expected_loc = path.join(self.archive, "2000", "q1", f"{proj_name}.tar.bz2")
         assert path.exists(expected_loc)
 
-    def test_archive_project_by_full_path_uncompressed(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_archive_project_by_full_path_uncompressed(self, autoload):
+        autoload.return_value = self.no_compression
+
         a = arrow.get(2000, 1, 1)
         proj_name, proj_path = self.make_proj(a=a)
 
-        result = self.runner.invoke(proj.archive, ["--no-compress", proj_path])
-        self.assertEqual(result.exit_code, 0)
+        result = self.runner.invoke(proj.archive, [proj_path])
+        assert result.exit_code == 0
 
         expected_loc = path.join(self.archive, "2000", "q1", proj_name)
         assert path.isdir(expected_loc)
         assert path.exists(path.join(expected_loc, "data"))
 
-    def test_list_projects(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_list_projects(self, autoload):
+        autoload.return_value = self.no_compression
+
         # archive a project
         a = arrow.get(2000, 1, 1)
         proj_name, proj_path = self.make_proj(a=a)
 
-        with chdir(self.current):
-            result = self.runner.invoke(proj.archive, [proj_name])
-            self.assertEqual(result.exit_code, 0)
+        result = self.runner.invoke(proj.archive, [proj_name])
+        assert result.exit_code == 0
 
         # list it
         expected = path.join("2000", "q1", proj_name) + "\n"
         result2 = self.runner.invoke(proj.list)
-        self.assertEqual(result2.exit_code, 0)
-        self.assertEqual(result2.output, expected)
+        assert result2.exit_code == 0
+        assert result2.output == expected
 
         # list it by suffix
         expected = path.join("2000", "q1", proj_name) + "\n"
         result3 = self.runner.invoke(proj.list, [proj_name[:4]])
-        self.assertEqual(result3.exit_code, 0)
-        self.assertEqual(result3.output, expected)
+        assert result3.exit_code == 0
+        assert result3.output == expected
 
-    def test_archive_and_restore(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_archive_and_restore(self, autoload):
+        autoload.return_value = self.no_compression
+
         # make a project
         proj_name, proj_path = self.make_proj()
 
-        with chdir(self.current):
-            # archive it
-            result = self.runner.invoke(proj.archive, [proj_name])
-            self.assertEqual(result.exit_code, 0)
-            assert not path.isdir(proj_path)
+        # archive it
+        result = self.runner.invoke(proj.archive, [proj_name])
+        assert result.exit_code == 0
+        assert not path.isdir(proj_path)
 
-            # restore it
-            result2 = self.runner.invoke(proj.restore, [proj_name])
-            self.assertEqual(result2.exit_code, 0)
-            assert path.isdir(proj_path)
+        # restore it
+        result2 = self.runner.invoke(proj.restore, [proj_name])
+        assert result2.exit_code == 0
+        assert path.isdir(proj_path)
 
-    def test_mkdir(self):
-        dest = path.join(self.current, "dog")
-        assert not path.isdir(dest)
-        proj._mkdir(dest)
-        assert path.isdir(dest)
+    @patch("proj.configfile.Config._get_config_file")
+    def test_no_config(self, get_config_file):
+        get_config_file.return_value = "does-not-exist.yml"
 
-        dest2 = path.join(self.current, "mouse", "a", "b", "c")
-        assert not path.isdir(dest2)
-        proj._mkdir(dest2)
-        assert path.isdir(dest2)
-
-    def test_archive_dir_not_set(self):
-        proj.PROJ_ARCHIVE = None
         result = self.runner.invoke(proj.main, ["list"])
-        self.assertEqual(result.exit_code, 1)
-
-    def test_archive_dir_doesnt_exist(self):
-        proj.PROJ_ARCHIVE = "/tmp/does-not-exist"
-        result = self.runner.invoke(proj.main, ["list"])
-        self.assertEqual(result.exit_code, 1)
+        assert result.exit_code == 1
 
     def test_archive_nonexistent_folder(self):
         result = self.runner.invoke(proj.main, ["archive", "old-buddy-fred"])
-        self.assertEqual(result.exit_code, 1)
+        assert result.exit_code == 1
 
     def test_archive_empty_folder(self):
         proj_path = path.join(self.current, "empty")
         os.mkdir(proj_path)
         result = self.runner.invoke(proj.main, ["archive", proj_path])
-        self.assertEqual(result.exit_code, 1)
+        assert result.exit_code == 1
 
     def test_restore_missing_project(self):
         result = self.runner.invoke(proj.main, ["restore", "my-dignity"])
-        self.assertEqual(result.exit_code, 1)
+        assert result.exit_code == 1
 
-    def test_restore_onto_existing_dir(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_restore_onto_existing_dir(self, autoload):
+        autoload.return_value = self.no_compression
+
         # make a project
         proj_name, proj_path = self.make_proj()
 
-        with chdir(self.current):
-            # archive it
-            result = self.runner.invoke(proj.archive, [proj_name])
-            self.assertEqual(result.exit_code, 0)
-            assert not path.isdir(proj_path)
+        # archive it
+        result = self.runner.invoke(proj.archive, [proj_name])
+        assert result.exit_code == 0
+        assert not path.isdir(proj_path)
 
-            # put something else in the way
-            os.mkdir(proj_name)
+        # put something else in the way
+        os.mkdir(proj_name)
 
-            result = self.runner.invoke(proj.main, ["restore", proj_name])
-            self.assertEqual(result.exit_code, 1)
+        result = self.runner.invoke(proj.main, ["restore", proj_name])
+        assert result.exit_code == 1
 
-    def test_restore_the_most_recent_of_duplicates(self):
+    @patch("proj.configfile.Config.autoload")
+    def test_restore_the_most_recent_of_duplicates(self, autoload):
+        autoload.return_value = self.no_compression
+
         name = random_string(8)
 
-        with chdir(self.current):
-            self.make_proj(name=name, a=arrow.get(2020, 1, 1), data="newer")
-            self.runner.invoke(proj.archive, [name])
+        self.make_proj(name=name, a=arrow.get(2020, 1, 1), data="newer")
+        self.runner.invoke(proj.archive, [name])
 
-            self.make_proj(name=name, a=arrow.get(2000, 1, 1), data="older")
-            self.runner.invoke(proj.archive, [name])
+        self.make_proj(name=name, a=arrow.get(2000, 1, 1), data="older")
+        self.runner.invoke(proj.archive, [name])
 
-            self.runner.invoke(proj.restore, [name])
-            with open(path.join(name, "data")) as istream:
-                data = istream.read()
-            self.assertEqual(data, "newer")
+        self.runner.invoke(proj.restore, [name])
+        with open(path.join(name, "data")) as istream:
+            data = istream.read()
+        assert data == "newer"
 
-    def make_proj(self, name=None, a=None, data=""):
+    def make_proj(
+        self,
+        name: Optional[str] = None,
+        a: Optional[arrow.Arrow] = None,
+        data: str = "",
+    ):
         a = a or random_time()
         t = a.timestamp
 
@@ -239,9 +253,6 @@ class TestProj(unittest.TestCase):
         os.utime(f, (t, t))
 
         return proj_name, proj_path
-
-    def tearDown(self):
-        shutil.rmtree(self.base)
 
 
 def random_time():

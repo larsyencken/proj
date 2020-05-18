@@ -51,3 +51,6 @@ dist: clean
 	python setup.py sdist
 	python setup.py bdist_wheel
 	ls -l dist
+
+watch: .venv
+	.venv/bin/watchmedo shell-command --drop -c 'clear && make lint && make mypy && .venv/bin/pytest -x' $(CODE_LOCATIONS)
